@@ -121,6 +121,10 @@ figure.code figcaption {
   color: #eeedef;
 }
 
+figure.code + figure.code {
+  margin-top:  5vmin;
+}
+
 .references ul {
   width: 100%;
 }

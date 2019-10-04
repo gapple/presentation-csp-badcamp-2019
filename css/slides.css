@@ -80,9 +80,10 @@
   background-color: #000;
 }
 
-#coinhive figure pre {
+#coinhive pre {
   text-wrap: normal;
   white-space: normal;
+  margin-top: 5vh;
 }
 
 #do-you-know {
@@ -162,7 +163,38 @@
   }
 }
 
-#csp-support figure {
+#xss-titlefield .xss-titlefield--highlight {
+  width: 20vw;
+  height: 10vw;
+  margin:  auto;
+  position: relative;
+}
+#xss-titlefield .xss-titlefield--highlight:after {
+  border: 1vmin #c33 solid;
+  width: 22%;
+  height: 6%;
+  display: block;
+  position: absolute;
+  left: 1%;
+  bottom: 17.5%;
+  content: '';
+  border-radius: 50%;
+}
+
+@media (orientation: portrait) {
+  #xss-titlefield .xss-titlefield--highlight {
+    width: 100vw;
+    height: calc(100vw  * 9  / 16);
+  }
+}
+@media (orientation: landscape) {
+  #xss-titlefield .xss-titlefield--highlight {
+    width: calc(100vh * 16 / 9);
+    height: 100vh;
+  }
+}
+
+.support figure {
   display: grid;
   grid-auto-columns: auto;
   grid-auto-flow: column;
@@ -172,45 +204,45 @@
   grid-template-rows: auto auto;
 }
 @media (orientation: landscape) {
-  #csp-support figure {
+  .support figure {
     padding: 0 10vmin;
   }
 }
 
-#csp-support table {
+.support table {
   font-size: 10vmin;
   width: 80%;
 }
 @media (orientation: portrait) {
-  #csp-support table {
+  .support table {
     width: 100%;
   }
 }
-#csp-support table th,
-#csp-support table td {
+.support table th,
+.support table td {
   padding: .1em;
   text-align: center;
   vertical-align: middle;
 }
 /** Firefox doesn't hide cell border if row opacity is 0 **/
-#csp-support .fragment th,
-#csp-support .fragment td {
+.support .fragment th,
+.support .fragment td {
   transition: all 0.2s linear;
 }
-#csp-support .fragment:not(.visible) th,
-#csp-support .fragment:not(.visible) td {
+.support .fragment:not(.visible) th,
+.support .fragment:not(.visible) td {
   border-bottom-color: transparent;
 }
-#csp-support th:first-child {
+.support th:first-child {
   font-size: 5vmin;
 }
-#csp-support .yes {
+.support .yes {
   color: green;
 }
-#csp-support .warning {
+.support .warning {
   color: orange;
 }
-#csp-support .no {
+.support .no {
   color: red;
 }
 
